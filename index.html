@@ -256,6 +256,7 @@ body {
 /* Tag */
 .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
 .tag-green { background: var(--primary-soft); color: var(--primary-dark); }
+.tag-teal { background: var(--accent-teal-soft); color: #4a8c7a; }
 .tag-orange { background: var(--accent-yellow-soft); color: #b08523; }
 .bonus-course-row { background: var(--accent-yellow-soft); border-color: #efdca0; }
 .tag-purple { background: #f1e8f5; color: var(--purple); }
@@ -960,6 +961,7 @@ body {
         <select id="perfType" onchange="Performance.onTypeChange()">
           <option value="">请选择</option>
           <option value="私教课业绩">私教课业绩</option><option value="续费业绩">续费业绩</option>
+          <option value="筋膜刀">筋膜刀</option>
           <option value="月度汇总">月度汇总</option>
         </select>
       </div>
@@ -1861,7 +1863,7 @@ document.getElementById('selfCardStartDate').addEventListener('change', function
 // ===== Performance =====
 const Performance = {
   currentFilter: '全部',
-  perfTypes: ['全部', '私教课业绩', '续费业绩', '月度汇总'],
+  perfTypes: ['全部', '私教课业绩', '续费业绩', '筋膜刀', '月度汇总'],
   getPerfs() { return Storage.get('performances') || []; },
   setPerfs(data) { Storage.set('performances', data); Storage.refreshDatalists(); },
   getByDate(dateStr) { return this.getPerfs().filter(p => { const d = p.date || (p.period ? p.period + '-01' : ''); return d === dateStr; }).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); },
@@ -1880,7 +1882,7 @@ const Performance = {
     });
     return list;
   },
-  onTypeChange() { const type = document.getElementById('perfType').value; const memberInput = document.getElementById('perfMemberName'); if (type === '私教课业绩') memberInput.placeholder = '请输入购买会员姓名（必填，用于课时结算）'; else memberInput.placeholder = '输入购买会员姓名'; },
+  onTypeChange() { const type = document.getElementById('perfType').value; const memberInput = document.getElementById('perfMemberName'); if (type === '私教课业绩') memberInput.placeholder = '请输入购买会员姓名（必填，用于课时结算）'; else if (type === '筋膜刀') memberInput.placeholder = '请输入会员姓名（必填，用于课时结算）'; else memberInput.placeholder = '输入购买会员姓名'; },
   render() {
     const dateStr = Calendar.selectedDate;
     document.getElementById('perfDateLabel').textContent = `${UI.formatDate(dateStr)} 教练业绩`;
@@ -1905,7 +1907,7 @@ const Performance = {
       const lessonsCell = p.isBonus
         ? `<span style="color:#b08523;">🎁${bn}送</span>`
         : (`<strong>${parseInt(p.lessons) || 0}</strong>` + (bn > 0 ? ` <small style="color:#b08523;">+${bn}送</small>` : ''));
-      const typeClass = p._virtual ? 'tag-blue' : (p.perfType === '私教课业绩' ? 'tag-purple' : 'tag-green');
+      const typeClass = p._virtual ? 'tag-blue' : (p.perfType === '私教课业绩' ? 'tag-purple' : (p.perfType === '筋膜刀' ? 'tag-teal' : 'tag-green'));
       const opsCell = p._virtual ? `<span class="tag tag-blue" style="font-size:11px;padding:1px 6px;">💰充值</span>` : `<button class="btn-edit" onclick="Performance.showEditModal('${p.id}')">编辑</button><button class="btn-del" onclick="Performance.del('${p.id}')">删除</button>`;
       html += `<tr><td>${coachDisplay}${bonusBadge}${splitTag}</td><td>${p.memberName ? esc(p.memberName) : '<span style="color:#ccc">-</span>'}</td><td><span class="tag ${typeClass}">${esc(p.perfType)}</span></td><td>${amountDisplay}</td><td>${lessonsCell}</td><td>${p.period}</td><td>${esc(p.remark || '-')}</td><td>${opsCell}</td></tr>`;
     });
@@ -1971,7 +1973,7 @@ const Performance = {
     html += `<div class="daily-record-block"><div class="block-header">🏷 按业绩类型汇总</div><div class="block-body"><table class="data-table"><thead><tr><th>类型</th><th>金额</th><th>课时</th><th>条数</th></tr></thead><tbody>`;
     Object.keys(byType).forEach(type => {
       const info = byType[type];
-      html += `<tr><td><span class="tag ${type === '私教课业绩' ? 'tag-purple' : 'tag-green'}">${esc(type)}</span></td><td>¥${info.total}</td><td>${info.lessons > 0 ? info.lessons : '-'}</td><td>${info.count}</td></tr>`;
+      html += `<tr><td><span class="tag ${type === '私教课业绩' ? 'tag-purple' : (type === '筋膜刀' ? 'tag-teal' : 'tag-green')}">${esc(type)}</span></td><td>¥${info.total}</td><td>${info.lessons > 0 ? info.lessons : '-'}</td><td>${info.count}</td></tr>`;
     });
     html += '</tbody></table></div></div>';
 
